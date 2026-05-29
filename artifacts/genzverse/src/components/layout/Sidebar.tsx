@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, UsersRound, Target, Bot, Sparkles, Store, Activity, User, Settings, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Users, UsersRound, Target, Bot, Sparkles, Store, Activity, User, Settings, LogOut, Menu, Zap } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/dashboard", icon: LayoutDashboard },
@@ -22,27 +23,34 @@ const BOTTOM_NAV_ITEMS = [
 
 export function Sidebar({ className = "", isMobile = false }: { className?: string, isMobile?: boolean }) {
   const [location] = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const NavContent = () => (
-    <div className="flex flex-col h-full py-6 px-4">
-      <div className="flex items-center gap-2 px-2 mb-8">
-        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
+    <div className="flex flex-col h-full py-6 px-4 bg-[#0a0a0a]">
+      <div className="flex items-center gap-3 px-2 mb-8">
+        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+          <Zap className="h-5 w-5 text-white" />
         </div>
-        <span className="font-display font-bold text-xl tracking-tight">GenZVerse</span>
+        <span className="font-display text-2xl tracking-tight uppercase">
+          <span className="text-white">GENZ</span><span className="text-primary">VERSE</span>
+        </span>
       </div>
 
-      <div className="space-y-1 flex-1">
+      <div className="space-y-2 flex-1">
         {NAV_ITEMS.map((item) => {
           const isActive = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
               <Button
-                variant={isActive ? "secondary" : "ghost"}
-                className={`w-full justify-start ${isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}`}
+                variant="ghost"
+                className={`w-full justify-start h-12 rounded-none border-l-2 transition-all ${
+                  isActive 
+                    ? "border-[#D9FF00] bg-[#D9FF00]/5 text-white font-bold" 
+                    : "border-transparent text-white/40 hover:text-white hover:bg-white/5"
+                }`}
+                data-testid={`sidebar-nav-${item.label.toLowerCase()}`}
               >
-                <item.icon className="mr-2 h-4 w-4" />
+                <item.icon className={`mr-3 h-5 w-5 ${isActive ? "text-[#D9FF00]" : ""}`} />
                 {item.label}
               </Button>
             </Link>
@@ -50,25 +58,58 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
         })}
       </div>
 
-      <div className="space-y-1 mt-auto">
+      <div className="space-y-2 mt-auto mb-6 border-t border-white/5 pt-6">
         {BOTTOM_NAV_ITEMS.map((item) => {
           const isActive = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
               <Button
-                variant={isActive ? "secondary" : "ghost"}
-                className={`w-full justify-start ${isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}`}
+                variant="ghost"
+                className={`w-full justify-start h-12 rounded-none border-l-2 transition-all ${
+                  isActive 
+                    ? "border-[#D9FF00] bg-[#D9FF00]/5 text-white font-bold" 
+                    : "border-transparent text-white/40 hover:text-white hover:bg-white/5"
+                }`}
               >
-                <item.icon className="mr-2 h-4 w-4" />
+                <item.icon className="mr-3 h-5 w-5" />
                 {item.label}
               </Button>
             </Link>
           );
         })}
-        <Button variant="ghost" className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => logout()}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start h-12 rounded-none border-l-2 border-transparent text-white/40 hover:text-red-400 hover:bg-red-500/10" 
+          onClick={() => logout()}
+        >
+          <LogOut className="mr-3 h-5 w-5" />
           Logout
         </Button>
+      </div>
+
+      {/* User Mini Profile */}
+      <div className="mt-auto bg-[#111111] p-4 rounded-2xl border border-white/10 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border border-primary/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+            <AvatarImage src={user?.avatarUrl || undefined} alt={user?.username || ""} />
+            <AvatarFallback className="bg-primary/20 text-primary">
+              {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white truncate">{user?.fullName || "Guest User"}</p>
+            <p className="text-xs text-white/40 font-display tracking-widest uppercase">Level {user?.level || 1}</p>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest">
+            <span>XP</span>
+            <span>{user?.xp || 0}/1000</span>
+          </div>
+          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full" style={{ width: `${((user?.xp || 0) / 1000) * 100}%` }} />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -77,11 +118,11 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
     return (
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button variant="ghost" size="icon" className="md:hidden text-white">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0 bg-background/80 backdrop-blur-xl border-r-border/50">
+        <SheetContent side="left" className="w-72 p-0 bg-[#0a0a0a] border-r-white/10">
           <NavContent />
         </SheetContent>
       </Sheet>
@@ -89,7 +130,7 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
   }
 
   return (
-    <div className={`hidden md:flex flex-col w-64 h-screen border-r border-border/50 bg-background/50 backdrop-blur-xl sticky top-0 ${className}`}>
+    <div className={`hidden md:flex flex-col w-72 h-screen border-r border-white/5 bg-[#0a0a0a] sticky top-0 ${className}`}>
       <NavContent />
     </div>
   );

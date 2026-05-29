@@ -1,0 +1,572 @@
+The current dashboard structure exists but many pages are mostly empty.
+
+DO NOT redesign the layout.
+
+DO NOT remove existing functionality.
+
+Instead, transform every page into a rich, interactive, startup-level experience.
+
+Every page should contain real widgets, analytics, cards, actions, animations, and user interactions.
+
+The application should never feel empty.
+
+⸻
+
+STYLEVERSE PAGE
+
+Transform StyleVerse into a complete fashion ecosystem.
+
+Add:
+
+Style DNA Card
+
+Analyze user fashion preferences.
+
+Display:
+
+* Streetwear %
+* Vintage %
+* Y2K %
+* Minimalist %
+* Techwear %
+
+Use animated radial charts.
+
+Outfit Gallery
+
+Pinterest-style grid.
+
+Users can:
+
+* Upload outfits
+* Save outfits
+* Like outfits
+* Share outfits
+
+AI Style Coach
+
+Provide suggestions such as:
+
+“You wear mostly monochrome outfits.”
+
+“Try adding earth tones.”
+
+Trending Styles
+
+Display trending aesthetics.
+
+Style Friends
+
+Show users with similar fashion tastes.
+
+Nearby Fashion Community
+
+Discover local fashion communities.
+
+Thrift Recommendations
+
+Recommend clothing based on user style.
+
+⸻
+
+MARKETPLACE PAGE
+
+Create a modern marketplace.
+
+Include:
+
+Featured Drops
+
+Trending clothing listings.
+
+Search & Filters
+
+Filter by:
+
+* Style
+* Size
+* Price
+* Brand
+* Condition
+
+Product Cards
+
+Show:
+
+* Image
+* Seller
+* Price
+* Trade Option
+
+Buy Section
+
+Trade Section
+
+Wishlist
+
+Saved Items
+
+Marketplace Activity Feed
+
+Example:
+
+“Riya listed Vintage Denim Jacket.”
+
+“Arjun traded Sneakers.”
+
+Marketplace Analytics
+
+Items sold
+
+Items traded
+
+Popular styles
+
+⸻
+
+LIFE WRAPPED PAGE
+
+This should become one of the best pages.
+
+Create:
+
+Monthly Wrapped
+
+Display:
+
+* Productivity
+* Learning
+* XP
+* Challenges
+* Communities
+* Style
+
+Animated Statistics
+
+Achievement Timeline
+
+Growth Journey
+
+AI Generated Summary
+
+Example:
+
+“You increased productivity by 22%.”
+
+Shareable Cards
+
+Previous Months Archive
+
+Squad Wrapped
+
+Show squad performance.
+
+Friend Wrapped
+
+Compare with friends.
+
+⸻
+
+PROFILE PAGE
+
+Create a complete profile system.
+
+Include:
+
+Profile Header
+
+Profile photo
+
+Cover image
+
+Username
+
+Level
+
+XP
+
+Bio
+
+Interests
+
+Skills
+
+Personal Stats
+
+Life Score
+
+Productivity
+
+Learning
+
+Style
+
+Social
+
+Achievement Showcase
+
+Friends Section
+
+Show:
+
+* Total friends
+* Online friends
+* Recently added friends
+
+Invite Friends Button
+
+Generate invite link.
+
+Share via:
+
+WhatsApp
+
+Instagram
+
+Discord
+
+Email
+
+Friend Requests
+
+Pending
+
+Accepted
+
+Rejected
+
+Activity Timeline
+
+Communities Joined
+
+Squads Joined
+
+Marketplace Activity
+
+Style DNA
+
+Life Wrapped Archive
+
+⸻
+
+COMMUNITIES PAGE
+
+Create community discovery.
+
+Include:
+
+Recommended Communities
+
+Based on interests.
+
+Trending Communities
+
+New Communities
+
+Popular Communities
+
+Community Categories
+
+Examples:
+
+* AI
+* Startups
+* Fitness
+* Fashion
+* Photography
+* Finance
+
+Join Community Button
+
+Community Feed
+
+Community Events
+
+Community Challenges
+
+⸻
+
+SQUADS PAGE
+
+Create squad hub.
+
+Include:
+
+My Squads
+
+Create Squad
+
+Join Squad
+
+Squad Chat
+
+Squad Goals
+
+Squad Challenges
+
+Squad Leaderboard
+
+Squad Wrapped
+
+Invite Friends
+
+Squad Activity Feed
+
+⸻
+
+CHALLENGES PAGE
+
+Create challenge center.
+
+Include:
+
+Daily Challenges
+
+Weekly Challenges
+
+Monthly Challenges
+
+Friend Challenges
+
+Squad Challenges
+
+Community Challenges
+
+XP Rewards
+
+Progress Tracking
+
+Leaderboard
+
+Challenge History
+
+⸻
+
+AI COMPANION PAGE
+
+Create premium AI experience.
+
+Include:
+
+Chat Interface
+
+AI Insights
+
+Goal Coach
+
+Habit Coach
+
+Learning Coach
+
+Weekly Plan Generator
+
+Productivity Analysis
+
+Personalized Recommendations
+
+Quick Actions
+
+Examples:
+
+Create Weekly Plan
+
+Suggest New Skills
+
+Analyze Progress
+
+Generate Goals
+
+⸻
+
+NOTIFICATION SYSTEM
+
+Notifications icon must open panel.
+
+Create notifications for:
+
+Friend Requests
+
+Community Invites
+
+Squad Invites
+
+Marketplace Activity
+
+Comments
+
+Likes
+
+Mentions
+
+Challenge Updates
+
+Achievements
+
+AI Insights
+
+Mark Read
+
+Delete
+
+Filter
+
+Notification History
+
+⸻
+
+SETTINGS PAGE
+
+Create complete settings dashboard.
+
+Tabs:
+
+Account
+
+Profile details
+
+Email
+
+Password
+
+Username
+
+Appearance
+
+Dark Mode
+
+Light Mode
+
+System Mode
+
+Theme Customization
+
+Notifications
+
+Push
+
+Email
+
+Community
+
+Marketplace
+
+AI
+
+Privacy
+
+Profile Visibility
+
+Friends Visibility
+
+Community Visibility
+
+Activity Visibility
+
+Security
+
+2FA
+
+Login Sessions
+
+Device Management
+
+Connected Accounts
+
+Google
+
+Discord
+
+Instagram
+
+LinkedIn
+
+AI Preferences
+
+Coaching Style
+
+Goal Preferences
+
+Recommendation Settings
+
+Data & Export
+
+Download Data
+
+Delete Account
+
+Backup
+
+⸻
+
+FRIEND SYSTEM
+
+Create dedicated friend management.
+
+Show:
+
+Online Friends
+
+New Friends
+
+Suggested Friends
+
+Mutual Friends
+
+Recently Active Friends
+
+Invite Friends
+
+Search Users
+
+Send Request
+
+Accept Request
+
+Reject Request
+
+Friend Activity Feed
+
+⸻
+
+EMPTY STATES
+
+No page should ever be empty.
+
+Whenever there is no data:
+
+Display:
+
+* Suggested actions
+* Sample previews
+* Recommended content
+* AI suggestions
+
+⸻
+
+ANIMATIONS
+
+Use Framer Motion.
+
+Add:
+
+Hover Effects
+
+Loading Skeletons
+
+Page Transitions
+
+Card Animations
+
+Notification Animations
+
+Interactive Charts
+
+⸻
+
+FINAL GOAL
+
+Every page should feel alive.
+
+Users should always have something to explore, discover, join, improve, buy, sell, learn, compare, or interact with.
+
+Transform the current dashboard into a complete social life operating system rather than a collection of empty pages.
