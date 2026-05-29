@@ -1,0 +1,197 @@
+I want to build a startup-level web application called GenZVerse.
+
+Before implementing all features, create a complete production-ready project foundation and architecture.
+
+Product Overview
+
+GenZVerse is an AI-powered social life operating system for Gen Z.
+
+The platform combines:
+
+* Social networking
+* Personal growth
+* Productivity
+* AI coaching
+* Communities
+* Friend challenges
+* Skill development
+* Fashion & thrifting
+* Analytics
+* Life Wrapped reports
+
+Think:
+
+* Notion
+* Discord
+* Duolingo
+* Spotify Wrapped
+* Strava
+* ChatGPT
+
+combined into one ecosystem.
+
+IMPORTANT
+
+DO NOT build all features immediately.
+
+First create:
+
+1. Project Structure
+
+Create a scalable startup-grade architecture using:
+
+Frontend:
+
+* Next.js 15
+* TypeScript
+* Tailwind CSS
+* Shadcn UI
+* Framer Motion
+
+Backend:
+
+* Node.js
+* Express
+* TypeScript
+
+Database:
+
+* PostgreSQL
+* Prisma ORM
+
+Authentication:
+
+* JWT
+* Google OAuth ready
+
+AI:
+
+* OpenAI integration ready
+
+State Management:
+
+* Zustand
+
+2. Modern Landing Page
+
+Create a stunning Gen Z landing page with:
+
+Sections:
+
+* Hero section
+* Features section
+* AI Digital Twin section
+* Social Squads section
+* Life Wrapped section
+* Community section
+* CTA section
+
+Add:
+
+* Smooth animations
+* Glassmorphism
+* Gradients
+* Modern typography
+* Mobile responsiveness
+
+3. Authentication System
+
+Build:
+
+* Signup
+* Login
+* Forgot Password
+* Google Sign In
+
+Create complete authentication flow.
+
+4. User Onboarding
+
+After signup ask:
+
+* Name
+* Username
+* Age
+* Occupation
+* Interests
+* Goals
+* Skills
+* Fashion Preferences
+
+Store data in database.
+
+5. Dashboard Shell
+
+Create dashboard layout only.
+
+Sidebar:
+
+* Home
+* Squads
+* Communities
+* Challenges
+* AI Companion
+* StyleVerse
+* Marketplace
+* Life Wrapped
+* Profile
+* Settings
+
+Top Navbar:
+
+* Search
+* Notifications
+* User Profile
+
+Dashboard Home should contain placeholder widgets:
+
+* Life Score
+* Productivity Score
+* Social Score
+* Learning Score
+* Finance Score
+* Style Score
+
+Use dummy data for now.
+
+6. Database Schema
+
+Create scalable Prisma schema for:
+
+* Users
+* Profiles
+* Friendships
+* Squads
+* Communities
+* Challenges
+* Activities
+
+7. Code Quality
+
+Requirements:
+
+* Modular folder structure
+* Reusable components
+* Clean architecture
+* Environment variables
+* Error handling
+* Responsive design
+* Dark mode support
+
+8. Future Ready
+
+Design the architecture so future modules can be plugged in easily:
+
+* AI Digital Twin
+* Friend Comparison
+* Community Analytics
+* StyleVerse
+* Thrift Marketplace
+* AI Companion
+* Life Wrapped
+
+Do not build these modules yet.
+
+Only create the foundation, navigation, authentication, onboarding, dashboard shell, database schema, and startup-grade UI.
+
+I will provide design inspiration images afterward, and then we will refine the UI before implementing features.

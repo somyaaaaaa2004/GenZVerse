@@ -1,0 +1,449 @@
+Analyze all uploaded UI reference images and completely redesign GenZVerse to match their visual quality, aesthetics, interactions, and overall user experience.
+
+IMPORTANT:
+
+Do NOT change any backend functionality, business logic, database schema, APIs, AI systems, social features, squads, communities, marketplace, digital twin, or Life Wrapped features.
+
+Only redesign the frontend UI/UX.
+
+⸻
+
+DESIGN DIRECTION
+
+Create a premium Gen Z startup aesthetic.
+
+The final design should feel like a fusion of:
+
+* Spotify Wrapped
+* Linear
+* Raycast
+* Duolingo
+* Discord
+* Arc Browser
+* Notion Calendar
+* Apple VisionOS
+
+The interface should look modern, futuristic, social, vibrant, and highly interactive.
+
+⸻
+
+THEME SYSTEM
+
+Create a complete Light Mode and Dark Mode.
+
+Users can switch instantly.
+
+Remember user preference.
+
+Support system theme detection.
+
+⸻
+
+DARK MODE
+
+Use the first uploaded image as the primary inspiration.
+
+Characteristics:
+
+* Pure black backgrounds
+* Deep charcoal surfaces
+* Neon gradients
+* Electric purple
+* Hot pink
+* Lime green
+* Cyan accents
+
+Visual style:
+
+* Bold typography
+* High contrast
+* Graffiti-inspired highlights
+* Creative editorial layouts
+* Vibrant visual storytelling
+* Music festival energy
+* Gaming culture energy
+* Streetwear culture energy
+
+Dark Mode should feel:
+
+“Spotify Wrapped meets Cyberpunk meets Gen Z”
+
+⸻
+
+LIGHT MODE
+
+Use the second uploaded image as the primary inspiration.
+
+Characteristics:
+
+* Clean white backgrounds
+* Frosted glass cards
+* Soft purple gradients
+* Holographic blobs
+* Floating UI elements
+* Premium SaaS feel
+
+Visual style:
+
+* Spacious layouts
+* Soft shadows
+* Floating cards
+* Premium onboarding experience
+* Apple-level polish
+
+Light Mode should feel:
+
+“Apple + Linear + Modern AI Startup”
+
+⸻
+
+COLOR SYSTEM
+
+Dark Mode:
+
+Primary:
+#A855F7
+
+Secondary:
+#EC4899
+
+Accent:
+#D9FF00
+
+Background:
+#050505
+
+Surface:
+#111111
+
+Card:
+#181818
+
+Light Mode:
+
+Primary:
+#7C3AED
+
+Secondary:
+#EC4899
+
+Accent:
+#A855F7
+
+Background:
+#FFFFFF
+
+Surface:
+#FAFAFA
+
+Card:
+#FFFFFF
+
+⸻
+
+TYPOGRAPHY
+
+Landing Pages:
+
+Use oversized bold headings.
+
+Examples:
+
+YOUR LIFE.
+YOUR VERSE.
+
+YOUR LIFE.
+UPGRADED.
+
+Headings should be visually impactful.
+
+Use:
+
+* Large display typography
+* Strong hierarchy
+* Modern font pairing
+
+Create a memorable startup identity.
+
+⸻
+
+ANIMATIONS
+
+Use Framer Motion heavily.
+
+Implement:
+
+* Smooth page transitions
+* Hover interactions
+* Floating effects
+* Animated gradients
+* Scroll animations
+* Card tilt effects
+* Magnetic buttons
+* Micro interactions
+
+Everything should feel alive.
+
+⸻
+
+LANDING PAGE REDESIGN
+
+Hero Section:
+
+Create a stunning hero with:
+
+* Floating dashboard previews
+* Animated metrics
+* Dynamic gradients
+* Interactive elements
+
+Include:
+
+Life Score
+
+Productivity Score
+
+Social Score
+
+AI Twin
+
+Streaks
+
+XP
+
+The hero should immediately communicate:
+
+“This is your AI-powered life operating system.”
+
+⸻
+
+DIGITAL TWIN SECTION
+
+Create a centerpiece visual.
+
+Use:
+
+* Floating orb
+* AI energy sphere
+* Interactive connections
+
+Display:
+
+* Mood Analysis
+* Habit Prediction
+* Goal Tracking
+* Friend Insights
+
+This should become one of the most visually impressive sections.
+
+⸻
+
+SQUADS SECTION
+
+Create vibrant squad cards.
+
+Include:
+
+* Member avatars
+* Online indicators
+* Progress
+* XP
+* Activity
+
+Cards should feel social and competitive.
+
+⸻
+
+LIFE WRAPPED SECTION
+
+Create Spotify Wrapped-inspired design.
+
+Include:
+
+* Story cards
+* Animated statistics
+* Shareable reports
+* Dynamic charts
+
+This section should feel viral and highly shareable.
+
+⸻
+
+COMMUNITIES SECTION
+
+Create:
+
+* Community cards
+* Activity indicators
+* Trending tags
+* Member counts
+
+Use colorful gradient identities.
+
+⸻
+
+DASHBOARD REDESIGN
+
+Dashboard should look like a premium SaaS platform.
+
+Include:
+
+Sidebar:
+
+* Glass effect
+* Icons
+* Smooth animations
+
+Widgets:
+
+* Life Score
+* Productivity
+* Learning
+* Finance
+* Social
+* Style
+
+Use:
+
+* Progress rings
+* Animated counters
+* Dynamic charts
+
+⸻
+
+AI COMPANION
+
+Create modern AI chat experience.
+
+Inspired by:
+
+* ChatGPT
+* Arc Browser
+* Perplexity
+
+Include:
+
+* Floating AI orb
+* Suggested prompts
+* Context cards
+
+⸻
+
+STYLEVERSE
+
+Create Pinterest-quality visual experience.
+
+Include:
+
+* Outfit grids
+* Style DNA visualizations
+* Marketplace previews
+
+Use large imagery.
+
+⸻
+
+MARKETPLACE
+
+Create premium marketplace UI.
+
+Inspired by:
+
+* StockX
+* Depop
+* Grailed
+
+Include:
+
+* Product cards
+* Offers
+* Wishlist
+* Trade system
+
+⸻
+
+ONBOARDING
+
+Redesign onboarding to match uploaded references.
+
+Include:
+
+* Multi-step flow
+* Progress indicators
+* Floating gradients
+* Smooth transitions
+
+Make onboarding feel premium and exciting.
+
+⸻
+
+LOGIN & SIGNUP
+
+Match the uploaded references exactly.
+
+Requirements:
+
+* Gradient background
+* Floating blobs
+* Glassmorphism
+* Premium card design
+* Social login buttons
+* Modern input fields
+
+⸻
+
+COMPONENT SYSTEM
+
+Create reusable design system.
+
+Include:
+
+Buttons
+
+Cards
+
+Inputs
+
+Modals
+
+Badges
+
+Charts
+
+Tabs
+
+Dropdowns
+
+Avatars
+
+Tooltips
+
+All components should support:
+
+* Light Mode
+* Dark Mode
+* Responsive layouts
+
+⸻
+
+RESPONSIVENESS
+
+Perfect experience for:
+
+* Desktop
+* Tablet
+* Mobile
+
+No broken layouts.
+
+⸻
+
+FINAL GOAL
+
+The finished product should look like a venture-funded AI startup worth millions of dollars.
+
+Users should immediately feel:
+
+“This is the future of personal growth, social connection, AI coaching, fashion, and community.”
+
+Match the visual quality of the uploaded references while preserving every existing GenZVerse feature and functionality.

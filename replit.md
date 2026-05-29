@@ -1,10 +1,11 @@
-# [Project name]
+# GenZVerse
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+The AI-powered social life operating system for Gen Z — combining social networking, personal growth, productivity, AI coaching, communities, and analytics into one universe.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080, served at `/api`)
+- `pnpm --filter @workspace/genzverse run dev` — run the frontend (port 21292, served at `/`)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -14,6 +15,7 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, Tailwind CSS, shadcn/ui, Framer Motion, wouter, next-themes
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -22,15 +24,33 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
+- `lib/db/src/schema/` — Drizzle table definitions (users, squads, communities, challenges, activities)
+- `artifacts/api-server/src/routes/` — Express route handlers
+- `artifacts/genzverse/src/` — React frontend
+  - `src/context/AuthContext.tsx` — JWT auth context (localStorage: `genzverse_token`)
+  - `src/pages/` — all pages (Landing, Login, Signup, Onboarding, Dashboard, etc.)
+  - `src/index.css` — theme variables (dark/light mode, Syne + Inter fonts)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Contract-first: OpenAPI spec gates all codegen; frontend consumes generated React Query hooks only
+- JWT auth via simple base64url tokens stored in localStorage (`genzverse_token`)
+- Dashboard stats endpoint returns user-specific scores when authenticated, falls back to sample data
+- Dark/light mode via next-themes with system detection and localStorage persistence
+- All routes behind `/dashboard/*` are protected; unauthenticated users redirect to `/login`
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+**Landing Page** — Hero, Features Grid, AI Digital Twin, Social Squads, Life Wrapped, Communities, CTA sections with Framer Motion animations
+
+**Auth** — Signup, Login with JWT token flow; after signup → onboarding if incomplete, else dashboard
+
+**Onboarding** — 4-step wizard: About You, Interests (chip selection), Goals (card selection), Welcome celebration
+
+**Dashboard** — Sidebar nav, Life/Productivity/Social/Learning/Finance/Style score widgets, Recent Activity feed
+
+**Additional Pages** — Squads, Communities, Challenges, AI Companion shell, StyleVerse, Marketplace, Life Wrapped, Profile, Settings
 
 ## User preferences
 
@@ -38,7 +58,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After OpenAPI changes: always run `pnpm --filter @workspace/api-spec run codegen` before using updated types
+- Password hashing: SHA-256 with random salt, stored as `hash:salt`
+- Array columns in Drizzle: use `.array()` method, e.g. `text("tags").array()`
+- Google Fonts `@import` must be the very first line in `index.css`
 
 ## Pointers
 
