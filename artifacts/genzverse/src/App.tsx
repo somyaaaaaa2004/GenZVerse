@@ -78,7 +78,7 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="genzverse-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="genzverse-theme">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
