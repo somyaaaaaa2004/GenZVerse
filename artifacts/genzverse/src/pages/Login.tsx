@@ -121,9 +121,9 @@ export default function Login() {
                       <FormLabel className="text-white/70 text-xs font-medium uppercase tracking-wider">
                         Password
                       </FormLabel>
-                      <span className="text-xs text-purple-400 hover:text-purple-300 cursor-pointer transition-colors">
+                      <Link href="/forgot-password" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
                         Forgot password?
-                      </span>
+                      </Link>
                     </div>
                     <FormControl>
                       <div className="relative">

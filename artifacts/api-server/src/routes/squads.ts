@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { db, squadsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 const router = Router();
 
 router.get("/squads", async (_req, res) => {
-  const squads = await db.select().from(squadsTable).orderBy(squadsTable.xp).limit(20);
+  const squads = await db.select().from(squadsTable).orderBy(desc(squadsTable.xp)).limit(20);
   res.json(squads);
 });
 

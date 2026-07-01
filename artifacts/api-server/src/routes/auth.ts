@@ -25,7 +25,7 @@ export function getUserIdFromToken(token: string): number | null {
 }
 
 function formatUser(user: typeof usersTable.$inferSelect) {
-  const { passwordHash: _pw, ...rest } = user;
+  const { passwordHash: _pw, passwordResetToken: _prt, passwordResetExpiry: _pre, ...rest } = user;
   return rest;
 }
 
@@ -117,6 +117,76 @@ router.get("/auth/me", async (req, res) => {
   }
 
   res.json(formatUser(user));
+});
+
+// Forgot password — generates a reset token stored in the DB.
+// In production: email the reset link. Here: return it in the response for demo use.
+router.post("/auth/forgot-password", async (req, res) => {
+  const { email } = req.body ?? {};
+  if (!email || typeof email !== "string") {
+    res.status(400).json({ error: "Email is required" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email.toLowerCase().trim())).limit(1);
+
+  // Always return success to avoid leaking whether an email is registered
+  if (!user) {
+    res.json({ success: true, message: "If that email exists, a reset link has been sent." });
+    return;
+  }
+
+  const resetToken = randomBytes(32).toString("hex");
+  const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await db.update(usersTable).set({
+    passwordResetToken: resetToken,
+    passwordResetExpiry: expiry,
+  }).where(eq(usersTable.id, user.id));
+
+  // Return the reset token so the frontend can build the reset URL
+  // In production, this would be emailed instead
+  res.json({
+    success: true,
+    message: "Reset link generated. Check your email (or use the resetToken below in dev).",
+    resetToken,
+  });
+});
+
+// Reset password — verifies the token and sets a new password
+router.post("/auth/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body ?? {};
+  if (!token || !newPassword || typeof token !== "string" || typeof newPassword !== "string") {
+    res.status(400).json({ error: "Token and new password are required" });
+    return;
+  }
+  if (newPassword.length < 8) {
+    res.status(400).json({ error: "Password must be at least 8 characters" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.passwordResetToken, token)).limit(1);
+
+  if (!user || !user.passwordResetExpiry) {
+    res.status(400).json({ error: "Invalid or expired reset token" });
+    return;
+  }
+
+  if (new Date() > user.passwordResetExpiry) {
+    res.status(400).json({ error: "Reset token has expired. Please request a new one." });
+    return;
+  }
+
+  const salt = randomBytes(16).toString("hex");
+  const passwordHash = hashPassword(newPassword, salt) + ":" + salt;
+
+  await db.update(usersTable).set({
+    passwordHash,
+    passwordResetToken: null,
+    passwordResetExpiry: null,
+  }).where(eq(usersTable.id, user.id));
+
+  res.json({ success: true, message: "Password updated successfully. You can now log in." });
 });
 
 export default router;

@@ -19,6 +19,8 @@ export const usersTable = pgTable("users", {
   xp: integer("xp").notNull().default(0),
   level: integer("level").notNull().default(1),
   streak: integer("streak").notNull().default(0),
+  passwordResetToken: text("password_reset_token"),
+  passwordResetExpiry: timestamp("password_reset_expiry", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

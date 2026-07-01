@@ -11,6 +11,8 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Onboarding from "@/pages/Onboarding";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import Squads from "@/pages/Squads";
 import Communities from "@/pages/Communities";
@@ -58,7 +60,9 @@ function AppRoutes() {
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/onboarding" component={Onboarding} />
-      
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
+
       {/* Protected Dashboard Routes */}
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/dashboard/squads" component={Squads} />
