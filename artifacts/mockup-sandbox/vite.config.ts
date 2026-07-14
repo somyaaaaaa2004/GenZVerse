@@ -5,7 +5,10 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { mockupPreviewPlugin } from "./mockupPreviewPlugin";
 
-const rawPort = process.env.PORT;
+// PORT is only needed for vite dev/preview servers. Production `vite build`
+// does not bind a port — default so CI (e.g. Vercel) can build without PORT.
+const isViteBuild = process.argv.includes("build");
+const rawPort = process.env.PORT ?? (isViteBuild ? "3000" : undefined);
 
 if (!rawPort) {
   throw new Error(
@@ -19,7 +22,7 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
+const basePath = process.env.BASE_PATH ?? (isViteBuild ? "/" : undefined);
 
 if (!basePath) {
   throw new Error(

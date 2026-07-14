@@ -92,6 +92,7 @@ export function ThemeProvider({
     }
 
     apply(theme);
+    return;
   }, [theme]);
 
   useEffect(() => {
