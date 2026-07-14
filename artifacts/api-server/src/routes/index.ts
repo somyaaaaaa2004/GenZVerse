@@ -1,22 +1,26 @@
-import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import authRouter from "./auth";
-import usersRouter from "./users";
-import dashboardRouter from "./dashboard";
-import squadsRouter from "./squads";
-import communitiesRouter from "./communities";
-import challengesRouter from "./challenges";
-import activitiesRouter from "./activities";
+import { Router } from "express";
+import healthRoutes from "./health.routes.js";
+import authRoutes from "./auth.routes.js";
+import userRoutes from "./user.routes.js";
+import dashboardRoutes from "./dashboard.routes.js";
+import dataRoutes from "./data.routes.js";
+import profileRoutes from "./profile.routes.js";
+import aiRoutes from "./ai.routes.js";
+import socialRoutes from "./social.routes.js";
+import challengeRoutes from "./challenge.routes.js";
+import outfitRoutes from "./outfit.routes.js";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.use(healthRouter);
-router.use(authRouter);
-router.use(usersRouter);
-router.use(dashboardRouter);
-router.use(squadsRouter);
-router.use(communitiesRouter);
-router.use(challengesRouter);
-router.use(activitiesRouter);
+router.use(healthRoutes);
+router.use(authRoutes);
+router.use(userRoutes);
+router.use(dashboardRoutes);
+router.use(dataRoutes);
+router.use(profileRoutes);
+router.use(aiRoutes);
+router.use(socialRoutes);
+router.use(challengeRoutes);
+router.use(outfitRoutes);
 
 export default router;

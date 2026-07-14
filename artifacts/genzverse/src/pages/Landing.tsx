@@ -1,9 +1,11 @@
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import {
   Zap, ArrowRight, Bot, Users, Trophy, TrendingUp, Shirt, BarChart3, Gift, Sparkles,
   ChevronRight, Star, Flame
 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
 
 const NAV_LINKS = ["Features", "Squads", "Communities", "AI Companion", "Life Wrapped", "Pricing"];
 
@@ -17,28 +19,47 @@ const FEATURES = [
   { icon: Gift, label: "Life Wrapped", desc: "Your story in stats", color: "from-rose-500 to-pink-600" },
 ];
 
-const SQUADS = [
-  { name: "Startup Squad", members: "324 Online", color: "from-violet-500 to-purple-700", xp: "12.4K XP" },
-  { name: "Fitness & Grind", members: "512 Online", color: "from-emerald-500 to-teal-700", xp: "18.7K XP" },
-  { name: "Creator Studio", members: "441 Online", color: "from-pink-500 to-rose-700", xp: "15.2K XP" },
-  { name: "Marketing Squad", members: "287 Online", color: "from-amber-500 to-orange-700", xp: "9.8K XP" },
-];
+type PublicStats = {
+  userCount: number;
+  communityCount: number;
+  challengeCount: number;
+  squadCount: number;
+};
 
-const COMMUNITIES = [
-  { name: "Gamers", members: "12.4K", color: "#7C3AED" },
-  { name: "Fashionistas", members: "8.7K", color: "#EC4899" },
-  { name: "Entrepreneurs", members: "5.3K", color: "#10B981" },
-  { name: "Wellness", members: "9.1K", color: "#F59E0B" },
-];
+type FeaturedSquad = {
+  id: string;
+  name: string;
+  onlineCount: number;
+  xp: number;
+  category: string;
+};
 
-const TODAY_SCHEDULE = [
-  { time: "7:00 AM", label: "Gym" },
-  { time: "9:30 AM", label: "AI Coaching" },
-  { time: "1:00 PM", label: "Study" },
-  { time: "8:00 PM", label: "Squad Call" },
-];
+type FeaturedCommunity = {
+  id: string;
+  name: string;
+  memberCount: number;
+  category: string;
+};
 
 export default function Landing() {
+  const { data: publicStats } = useQuery({
+    queryKey: ["public-stats"],
+    queryFn: () => apiFetch<PublicStats>("/api/public/stats"),
+    staleTime: 60_000,
+  });
+
+  const { data: featuredSquads } = useQuery({
+    queryKey: ["featured-squads"],
+    queryFn: () => apiFetch<FeaturedSquad[]>("/api/squads/featured"),
+    staleTime: 60_000,
+  });
+
+  const { data: featuredCommunities } = useQuery({
+    queryKey: ["featured-communities"],
+    queryFn: () => apiFetch<FeaturedCommunity[]>("/api/communities/featured"),
+    staleTime: 60_000,
+  });
+
   return (
     <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
 
@@ -59,10 +80,10 @@ export default function Landing() {
             ))}
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login">
+            <Link to="/login">
               <span className="text-white/60 hover:text-white text-sm cursor-pointer transition-colors">Log In</span>
             </Link>
-            <Link href="/signup">
+            <Link to="/signup">
               <button className="h-8 px-4 bg-[#D9FF00] text-black text-sm font-bold rounded-lg hover:bg-[#c8ee00] transition-colors">
                 Get Started
               </button>
@@ -104,7 +125,7 @@ export default function Landing() {
                 All in one <span className="text-[#D9FF00] font-medium">universe</span>.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mb-10">
-                <Link href="/signup">
+                <Link to="/signup">
                   <button
                     data-testid="button-hero-cta"
                     className="flex items-center gap-2 h-12 px-7 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
@@ -128,9 +149,13 @@ export default function Landing() {
                     ))}
                   </div>
                   <div className="h-8 w-8 rounded-full bg-white/10 border-2 border-[#050505] flex items-center justify-center text-xs font-bold text-white/70">
-                    +50K
+                    {publicStats ? `+${publicStats.userCount.toLocaleString()}` : "—"}
                   </div>
-                  <span className="text-white/40 text-xs">Trusted by 50K+ Gen Z Worldwide</span>
+                  <span className="text-white/40 text-xs">
+                    {publicStats
+                      ? `Trusted by ${publicStats.userCount.toLocaleString()}+ users`
+                      : "Trusted by the GenZVerse community"}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -170,24 +195,25 @@ export default function Landing() {
               {/* Today schedule */}
               <div className="space-y-2 mb-4">
                 <p className="text-white/40 text-xs uppercase tracking-wider mb-3">Today</p>
-                {TODAY_SCHEDULE.map((s) => (
-                  <div key={s.label} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2">
-                    <span className="text-white/40 text-xs">{s.time}</span>
-                    <span className="text-white text-sm font-medium">{s.label}</span>
-                    <Star className="h-3 w-3 text-[#D9FF00]" />
-                  </div>
-                ))}
+                <div className="bg-white/5 rounded-lg px-3 py-3 border border-white/10">
+                  <p className="text-white/70 text-sm font-medium">
+                    Your schedule is personalized after onboarding.
+                  </p>
+                  <p className="text-white/40 text-xs mt-1">
+                    Create your account to start tracking goals, streaks, and tasks.
+                  </p>
+                </div>
               </div>
 
               {/* XP / streak */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-xl p-3 border border-purple-500/20">
                   <p className="text-purple-300/70 text-xs uppercase tracking-wider">XP</p>
-                  <p className="font-display font-bold text-xl text-white">2,450</p>
+                  <p className="font-display font-bold text-xl text-white">—</p>
                 </div>
                 <div className="bg-gradient-to-br from-[#D9FF00]/10 to-amber-500/5 rounded-xl p-3 border border-[#D9FF00]/20">
                   <p className="text-[#D9FF00]/70 text-xs uppercase tracking-wider">Streak</p>
-                  <p className="font-display font-bold text-xl text-white">29 Days</p>
+                  <p className="font-display font-bold text-xl text-white">—</p>
                 </div>
               </div>
             </div>
@@ -269,7 +295,7 @@ export default function Landing() {
                 ))}
               </div>
 
-              <Link href="/signup">
+              <Link to="/signup">
                 <button className="mt-6 flex items-center gap-2 h-10 px-5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors text-sm">
                   Chat With AI <ArrowRight className="h-4 w-4" />
                 </button>
@@ -298,28 +324,56 @@ export default function Landing() {
 
               {/* Squad cards */}
               <div className="space-y-3">
-                {SQUADS.map((squad, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-white/[0.04] border border-white/5 rounded-xl px-4 py-3 hover:border-white/10 transition-colors">
-                    <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${squad.color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
-                      {squad.name[0]}
+                {(featuredSquads ?? []).length > 0 ? (
+                  (featuredSquads ?? []).slice(0, 4).map((squad) => (
+                    <div
+                      key={squad.id}
+                      className="flex items-center gap-3 bg-white/[0.04] border border-white/5 rounded-xl px-4 py-3 hover:border-white/10 transition-colors"
+                    >
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {squad.name[0]?.toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-semibold text-sm truncate">
+                          {squad.name}
+                        </p>
+                        <p className="text-white/40 text-xs">
+                          {squad.onlineCount.toLocaleString()} online · {squad.category}
+                        </p>
+                      </div>
+                      <span className="text-[#D9FF00] text-xs font-bold">
+                        {squad.xp.toLocaleString()} XP
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{squad.name}</p>
-                      <p className="text-white/40 text-xs">{squad.members}</p>
-                    </div>
-                    <span className="text-[#D9FF00] text-xs font-bold">{squad.xp}</span>
+                  ))
+                ) : (
+                  <div className="bg-white/[0.04] border border-white/5 rounded-xl px-4 py-4">
+                    <p className="text-white/70 text-sm font-semibold">
+                      No featured squads yet.
+                    </p>
+                    <p className="text-white/40 text-xs mt-1">
+                      Create the first squad after signing up.
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
 
               <div className="flex items-center gap-3 mt-6">
                 <div className="flex -space-x-2">
                   {["#7C3AED", "#EC4899", "#10B981", "#F59E0B"].map((c, i) => (
-                    <div key={i} className="h-7 w-7 rounded-full border-2 border-[#0a0a0a]" style={{ backgroundColor: c }} />
+                    <div
+                      key={i}
+                      className="h-7 w-7 rounded-full border-2 border-[#0a0a0a]"
+                      style={{ backgroundColor: c }}
+                    />
                   ))}
                 </div>
-                <span className="text-white/40 text-xs">+12K members online</span>
-                <Link href="/signup" className="ml-auto">
+                <span className="text-white/40 text-xs">
+                  {publicStats
+                    ? `${publicStats.squadCount.toLocaleString()} squads created`
+                    : "Squads are forming now"}
+                </span>
+                <Link to="/signup" className="ml-auto">
                   <button className="flex items-center gap-1 text-pink-400 text-xs font-bold hover:text-pink-300 transition-colors">
                     Explore Squads <ChevronRight className="h-3.5 w-3.5" />
                   </button>
@@ -352,7 +406,7 @@ export default function Landing() {
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full">
                 LIFE WRAPPED 2024
               </div>
-              <Link href="/signup">
+              <Link to="/signup">
                 <button className="flex items-center gap-1 text-white/60 text-sm hover:text-white transition-colors">
                   See My Wrapped <ArrowRight className="h-4 w-4" />
                 </button>
@@ -374,19 +428,37 @@ export default function Landing() {
             </h3>
             <p className="text-white/40 text-sm mb-6">From gaming to self-care, fashion to finance — there's a community for every part of you.</p>
             <div className="grid grid-cols-2 gap-3">
-              {COMMUNITIES.map((c, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white/[0.04] border border-white/5 rounded-xl px-3 py-3 hover:border-white/10 transition-colors">
-                  <div className="h-8 w-8 rounded-lg flex-shrink-0" style={{ backgroundColor: c.color + "33" }}>
-                    <div className="h-full w-full rounded-lg flex items-center justify-center">
-                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
+              {(featuredCommunities ?? []).length > 0 ? (
+                (featuredCommunities ?? []).slice(0, 4).map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-3 bg-white/[0.04] border border-white/5 rounded-xl px-3 py-3 hover:border-white/10 transition-colors"
+                  >
+                    <div className="h-8 w-8 rounded-lg flex-shrink-0 bg-cyan-500/20">
+                      <div className="h-full w-full rounded-lg flex items-center justify-center">
+                        <div className="h-3 w-3 rounded-full bg-cyan-400" />
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white text-sm font-semibold truncate">
+                        {c.name}
+                      </p>
+                      <p className="text-white/40 text-xs">
+                        {c.memberCount.toLocaleString()} members · {c.category}
+                      </p>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">{c.name}</p>
-                    <p className="text-white/40 text-xs">{c.members} members</p>
-                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 bg-white/[0.04] border border-white/5 rounded-xl px-4 py-4">
+                  <p className="text-white/70 text-sm font-semibold">
+                    No featured communities yet.
+                  </p>
+                  <p className="text-white/40 text-xs mt-1">
+                    Be the first to create one.
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           </motion.div>
         </div>
@@ -414,7 +486,7 @@ export default function Landing() {
           </h2>
           <p className="text-white/40 text-base mb-8">Join GenZVerse today and start your journey.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Link href="/signup">
+            <Link to="/signup">
               <button
                 data-testid="button-cta-signup"
                 className="flex items-center gap-2 h-14 px-8 bg-[#D9FF00] text-black font-black rounded-xl hover:bg-[#c8ee00] transition-all hover:scale-[1.02] active:scale-[0.98] text-base"

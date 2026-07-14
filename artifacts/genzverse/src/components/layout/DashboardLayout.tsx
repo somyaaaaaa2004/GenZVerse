@@ -1,26 +1,26 @@
 import { ReactNode, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Sidebar } from "./Sidebar";
 import { Navbar } from "./Navbar";
 import { Spinner } from "@/components/ui/spinner";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      setLocation("/login");
+      navigate("/login", { replace: true });
     } else if (!isLoading && isAuthenticated && user && !user.onboardingCompleted) {
-      setLocation("/onboarding");
+      navigate("/onboarding", { replace: true });
     }
-  }, [isAuthenticated, isLoading, user, setLocation]);
+  }, [isAuthenticated, isLoading, user, navigate]);
 
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Spinner size="lg" className="text-primary" />
+        <Spinner className="size-8 text-primary" />
       </div>
     );
   }

@@ -1,208 +1,229 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Bot, Send, Mic, Sparkles, Target, TrendingUp, Calendar, Lightbulb, Zap, Brain } from "lucide-react";
-
-const INITIAL_MESSAGES = [
-  { id: 1, role: "ai", text: "Hey! I'm your AI twin. I know your goals, habits, and what makes you tick. Ready to level up today?" },
-  { id: 2, role: "user", text: "Yeah, what should I focus on today?" },
-  { id: 3, role: "ai", text: "Based on your week, I'd prioritize: 1) Complete the 5K run challenge — you're 60% there, 2) 30min deep work on your startup idea, 3) Check in with Startup Squad. You're on a 7-day streak — don't break it!" },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { Bot, Send, Sparkles, Target, TrendingUp, Calendar, Lightbulb, Brain, Trash2 } from "lucide-react";
+import { aiApi } from "@/lib/api/client";
+import { Empty, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
 const QUICK_ACTIONS = [
-  { label: "Create Weekly Plan", icon: Calendar, color: "text-purple-400" },
-  { label: "Suggest New Skills", icon: Brain, color: "text-cyan-400" },
-  { label: "Analyze Progress", icon: TrendingUp, color: "text-emerald-400" },
-  { label: "Generate Goals", icon: Target, color: "text-pink-400" },
+  { label: "Help me plan my week", icon: Calendar },
+  { label: "I want to improve my fitness", icon: Target },
+  { label: "I want streetwear", icon: Sparkles },
+  { label: "I want more XP", icon: TrendingUp },
+  { label: "I feel lonely", icon: Brain },
+  { label: "Suggest a study plan", icon: Lightbulb },
 ];
 
-const INSIGHTS = [
-  { text: "Your productivity peaks on Tuesdays — schedule your hardest tasks then", icon: Lightbulb },
-  { text: "You've completed 87% of this week's goals. You're close to a personal best!", icon: Zap },
-  { text: "Adding 30min deep work sessions could boost your learning score by 15%", icon: Brain },
-];
-
-const GOALS = [
-  { name: "Read 12 Books", progress: 75, color: "#7C3AED" },
-  { name: "Workout 4x/week", progress: 60, color: "#EC4899" },
-  { name: "Ship Side Project", progress: 30, color: "#D9FF00" },
-];
+function renderMarkdownLite(text: string) {
+  const lines = text.split("\n");
+  return lines.map((line, idx) => {
+    if (line.startsWith("### ")) return <h4 key={idx} className="font-bold mt-2">{line.slice(4)}</h4>;
+    if (line.startsWith("## ") || line.startsWith("**") && line.endsWith("**") && !line.includes(" ")) {
+      // skip
+    }
+    if (/^\*\*.+\*\*$/.test(line.trim())) {
+      return <p key={idx} className="font-bold mt-2">{line.replace(/\*\*/g, "")}</p>;
+    }
+    if (line.startsWith("- ") || line.startsWith("* ")) {
+      return <li key={idx} className="ml-4 list-disc">{line.slice(2)}</li>;
+    }
+    if (/^\d+\.\s/.test(line)) {
+      return <li key={idx} className="ml-4 list-decimal">{line.replace(/^\d+\.\s/, "")}</li>;
+    }
+    if (line.startsWith("|")) {
+      return <p key={idx} className="font-mono text-xs whitespace-pre-wrap">{line}</p>;
+    }
+    if (!line.trim()) return <br key={idx} />;
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <p key={idx} className="leading-relaxed">
+        {parts.map((p, i) =>
+          p.startsWith("**") && p.endsWith("**") ? (
+            <strong key={i}>{p.slice(2, -2)}</strong>
+          ) : (
+            <span key={i}>{p}</span>
+          ),
+        )}
+      </p>
+    );
+  });
+}
 
 export default function AICompanion() {
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>(QUICK_ACTIONS.map((q) => q.label));
   const bottomRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: ["ai", "messages"],
+    queryFn: () => aiApi.getMessages(),
+  });
+
+  const { data: insights } = useQuery({
+    queryKey: ["ai", "insights"],
+    queryFn: () => aiApi.getInsights(),
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: (content: string) => aiApi.sendMessage(content),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["ai", "messages"] });
+      setInput("");
+      if (data.suggestions?.length) setSuggestions(data.suggestions);
+    },
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: () => aiApi.clearMessages(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["ai", "messages"] }),
+  });
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, sendMutation.isPending]);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    const userMsg = { id: messages.length + 1, role: "user", text: input };
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: prev.length + 1,
-        role: "ai",
-        text: "I'm analyzing that for you. Based on your current trajectory and goals, I recommend focusing on consistency over intensity. Small daily wins compound into massive results over time.",
-      }]);
-    }, 1800);
+  const sendMessage = (text?: string) => {
+    const content = (text ?? input).trim();
+    if (!content || sendMutation.isPending) return;
+    sendMutation.mutate(content);
   };
 
+  const insightCards = useMemo(
+    () => [
+      { label: "Streak", value: insights?.currentStreak ?? 0 },
+      { label: "Life Score", value: insights?.lifeScore ?? 0 },
+      { label: "Weekly Activity", value: insights?.weeklyActivityCount ?? 0 },
+      { label: "Level", value: insights?.level ?? 1 },
+    ],
+    [insights],
+  );
+
   return (
-    <div className="min-h-screen bg-[#050505] pb-6">
-      <div className="mb-6">
-        <p className="text-white/40 text-xs font-bold tracking-[0.3em] uppercase mb-1">Your Digital Twin</p>
-        <h1 className="font-display text-5xl text-white uppercase tracking-tight">
-          AI <span className="text-[#7C3AED]">Companion</span>
-        </h1>
+    <div className="min-h-screen bg-background pb-6">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-muted-foreground text-xs font-bold tracking-[0.3em] uppercase mb-1">Your Digital Twin</p>
+          <h1 className="font-display text-5xl text-foreground uppercase tracking-tight">
+            AI <span className="text-purple-500">Companion</span>
+          </h1>
+        </div>
+        <Button variant="outline" onClick={() => clearMutation.mutate()} disabled={clearMutation.isPending}>
+          <Trash2 className="h-4 w-4 mr-2" /> Clear chat
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-220px)] min-h-[500px]">
-        {/* Chat Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[500px]">
         <div className="lg:col-span-2 flex flex-col">
-          <Card className="flex-1 flex flex-col bg-[#111111] border-white/10 rounded-2xl overflow-hidden">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-white/5 flex items-center gap-3">
-              <div className="relative">
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                  <Bot className="h-6 w-6 text-white" />
-                </div>
-                <motion.div
-                  animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="absolute inset-0 rounded-full bg-purple-500/30"
-                />
+          <Card className="flex-1 flex flex-col bg-card border-border rounded-2xl overflow-hidden min-h-[520px]">
+            <div className="p-4 border-b border-border flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                <Bot className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="font-display text-xl text-white uppercase">AI Companion</h3>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-                  <span className="text-xs text-white/40">Online · Knows you deeply</span>
-                </div>
+                <p className="font-bold">GenZVerse AI</p>
+                <p className="text-xs text-emerald-500">Online · Remembers context · Platform-aware</p>
               </div>
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <AnimatePresence initial={false}>
-                {messages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} gap-3`}
-                  >
-                    {msg.role === "ai" && (
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0 mt-1">
-                        <Bot className="h-4 w-4 text-white" />
-                      </div>
-                    )}
-                    <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                      msg.role === "ai"
-                        ? "bg-gradient-to-br from-purple-900/60 to-pink-900/40 border border-purple-500/20 text-white"
-                        : "bg-[#1a1a1a] border border-white/10 text-white"
-                    }`}>
-                      {msg.text}
+              {isLoading ? (
+                <Skeleton className="h-24 rounded-xl" />
+              ) : messages.length === 0 ? (
+                <Empty>
+                  <EmptyTitle>Start a conversation</EmptyTitle>
+                  <EmptyDescription>
+                    Ask about fitness, StyleVerse, XP, communities, weekly plans, and more.
+                  </EmptyDescription>
+                </Empty>
+              ) : (
+                messages.map((m) => (
+                  <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${
+                        m.role === "user"
+                          ? "bg-lime text-black"
+                          : "bg-muted text-foreground border border-border"
+                      }`}
+                    >
+                      {m.role === "assistant" ? renderMarkdownLite(m.content) : m.content}
                     </div>
-                  </motion.div>
-                ))}
-
-                {isTyping && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-end">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="bg-purple-900/40 border border-purple-500/20 px-4 py-3 rounded-2xl flex gap-1">
-                      {[0, 0.2, 0.4].map((d, i) => (
-                        <motion.div key={i} animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.8, delay: d }} className="h-2 w-2 rounded-full bg-purple-400" />
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+                ))
+              )}
+              {sendMutation.isPending && (
+                <div className="flex justify-start">
+                  <div className="px-4 py-3 rounded-2xl bg-muted border border-border text-sm animate-pulse">
+                    Thinking…
+                  </div>
+                </div>
+              )}
               <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
-            <div className="p-4 border-t border-white/5">
-              <div className="flex gap-3">
+            <div className="p-3 border-t border-border space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {suggestions.slice(0, 4).map((s) => (
+                  <Button key={s} size="sm" variant="outline" onClick={() => sendMessage(s)} disabled={sendMutation.isPending}>
+                    {s}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex gap-2">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  placeholder="Ask anything about your goals, habits, or life..."
-                  className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+                  placeholder="Ask anything…"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendMessage();
+                  }}
                 />
-                <Button variant="ghost" size="icon" className="h-12 w-12 text-white/40 hover:text-white border border-white/10 rounded-xl">
-                  <Mic className="h-5 w-5" />
-                </Button>
-                <Button onClick={sendMessage} className="h-12 px-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 rounded-xl font-bold">
-                  <Send className="h-5 w-5" />
+                <Button onClick={() => sendMessage()} disabled={sendMutation.isPending || !input.trim()}>
+                  <Send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Sidebar */}
-        <div className="flex flex-col gap-4 overflow-y-auto">
-          {/* Quick Actions */}
-          <Card className="bg-[#111111] border-white/10 rounded-2xl p-4">
-            <p className="text-white/40 text-xs font-bold tracking-[0.3em] uppercase mb-3">Quick Actions</p>
-            <div className="space-y-2">
+        <div className="space-y-4">
+          <Card className="p-4 bg-card border-border rounded-2xl">
+            <h3 className="font-bold mb-3">Quick actions</h3>
+            <div className="grid grid-cols-1 gap-2">
               {QUICK_ACTIONS.map((a) => (
-                <button key={a.label} className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-left">
-                  <a.icon className={`h-5 w-5 flex-shrink-0 ${a.color}`} />
-                  <span className="text-sm font-medium text-white">{a.label}</span>
-                </button>
+                <Button
+                  key={a.label}
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => sendMessage(a.label)}
+                  disabled={sendMutation.isPending}
+                >
+                  <a.icon className="h-4 w-4 mr-2" /> {a.label}
+                </Button>
               ))}
             </div>
           </Card>
-
-          {/* AI Insights */}
-          <Card className="bg-[#111111] border-white/10 rounded-2xl p-4">
-            <p className="text-white/40 text-xs font-bold tracking-[0.3em] uppercase mb-3">AI Insights</p>
-            <div className="space-y-3">
-              {INSIGHTS.map((ins, i) => (
-                <div key={i} className="flex gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                  <ins.icon className="h-4 w-4 text-purple-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-white/70 leading-relaxed">{ins.text}</p>
+          <Card className="p-4 bg-card border-border rounded-2xl">
+            <h3 className="font-bold mb-3">Your pulse</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {insightCards.map((c) => (
+                <div key={c.label} className="rounded-xl border border-border p-3">
+                  <p className="text-xs text-muted-foreground">{c.label}</p>
+                  <p className="text-xl font-bold">{c.value}</p>
                 </div>
               ))}
             </div>
-          </Card>
-
-          {/* Goals */}
-          <Card className="bg-[#111111] border-white/10 rounded-2xl p-4">
-            <p className="text-white/40 text-xs font-bold tracking-[0.3em] uppercase mb-3">Goal Coach</p>
-            <div className="space-y-4">
-              {GOALS.map((g) => (
-                <div key={g.name}>
-                  <div className="flex justify-between mb-1.5">
-                    <span className="text-xs font-bold text-white">{g.name}</span>
-                    <span className="text-xs font-bold" style={{ color: g.color }}>{g.progress}%</span>
-                  </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${g.progress}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full rounded-full"
-                      style={{ background: g.color }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            {insights?.recommendations?.challenges?.length ? (
+              <div className="mt-4 space-y-1">
+                <p className="text-xs text-muted-foreground uppercase">Suggested challenges</p>
+                {insights.recommendations.challenges.map((c) => (
+                  <p key={c.title} className="text-sm">{c.title} · {c.category}</p>
+                ))}
+              </div>
+            ) : null}
           </Card>
         </div>
       </div>

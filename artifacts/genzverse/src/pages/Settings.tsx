@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import { apiFetch } from "@/lib/api/client";
+import { useTheme } from "@/components/theme-provider";
 import {
   User, Palette, Bell, Lock, Shield, Link2, Bot, Database,
   Moon, Sun, Monitor, CheckCircle2, Trash2, Download, LogOut
@@ -22,27 +25,81 @@ const TABS = [
   { id: "data", label: "Data & Export", icon: Database },
 ];
 
-const CONNECTED_ACCOUNTS = [
-  { name: "Google", color: "from-red-500 to-orange-500", connected: false },
-  { name: "Discord", color: "from-indigo-500 to-violet-500", connected: true },
-  { name: "Instagram", color: "from-pink-500 to-rose-500", connected: false },
-  { name: "LinkedIn", color: "from-blue-600 to-cyan-600", connected: false },
-];
+type UserSettings = {
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  marketingEmails: boolean;
+  notifyFriendRequests: boolean;
+  notifyCommunityInvites: boolean;
+  notifySquadInvites: boolean;
+  notifyComments: boolean;
+  notifyLikes: boolean;
+  notifyChallenges: boolean;
+  notifyAiInsights: boolean;
+  profileVisibility: "public" | "friends" | "private";
+  showOnlineStatus: boolean;
+  allowFriendRequests: boolean;
+  theme: "light" | "dark" | "system";
+  accentColor?: string;
+  language: string;
+};
 
-const SESSIONS = [
-  { device: "MacBook Pro (Chrome)", location: "Mumbai, India", time: "Now · Current", current: true },
-  { device: "iPhone 15 (Safari)", location: "Mumbai, India", time: "2 hours ago" },
-  { device: "iPad Pro (Chrome)", location: "Delhi, India", time: "3 days ago" },
-];
+type SessionItem = {
+  id: string;
+  userAgent: string | null;
+  ipAddress: string | null;
+  rememberMe: boolean;
+  createdAt: string;
+  expiresAt: string;
+};
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const { theme: activeTheme, setTheme, accentColor, setAccentColor } = useTheme();
+  const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState("appearance");
-  const [theme, setTheme] = useState("dark");
-  const [notifications, setNotifications] = useState({
-    friendRequests: true, communityInvites: true, squadInvites: true,
-    marketplace: false, comments: true, likes: false, challenges: true, aiInsights: true,
+
+  const { data: settings, isLoading: settingsLoading } = useQuery({
+    queryKey: ["user-settings"],
+    queryFn: () => apiFetch<UserSettings>("/api/users/settings"),
   });
+
+  useEffect(() => {
+    if (!settings) return;
+    if (settings.theme && settings.theme !== activeTheme) {
+      setTheme(settings.theme);
+    }
+    if (settings.accentColor && settings.accentColor !== accentColor) {
+      setAccentColor(settings.accentColor);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings?.theme, settings?.accentColor]);
+
+  const { data: sessions } = useQuery({
+    queryKey: ["profile-sessions"],
+    queryFn: () => apiFetch<SessionItem[]>("/api/profile/sessions"),
+  });
+
+  const updateSettings = useMutation({
+    mutationFn: (patch: Partial<UserSettings>) =>
+      apiFetch<UserSettings>("/api/users/settings", {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      }),
+    onSuccess: (next) => {
+      qc.setQueryData(["user-settings"], next);
+    },
+  });
+
+  const theme = settings?.theme ?? activeTheme ?? "system";
+  const selectedAccent = settings?.accentColor ?? accentColor ?? "#D9FF00";
+
+  const connectedAccounts = useMemo(() => {
+    const googleConnected = Boolean((user as { googleId?: string } | null)?.googleId);
+    return [
+      { name: "Google", color: "from-red-500 to-orange-500", connected: googleConnected },
+    ];
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-[#050505] pb-12">
@@ -103,7 +160,11 @@ export default function Settings() {
                       ].map((t) => (
                         <button
                           key={t.id}
-                          onClick={() => setTheme(t.id)}
+                          onClick={() => {
+                            const next = t.id as UserSettings["theme"];
+                            setTheme(next);
+                            updateSettings.mutate({ theme: next });
+                          }}
                           className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${
                             theme === t.id ? "border-[#D9FF00] bg-[#D9FF00]/5" : "border-white/10 hover:border-white/30"
                           }`}
@@ -119,7 +180,20 @@ export default function Settings() {
                     <p className="text-white/40 text-xs font-bold tracking-[0.3em] uppercase mb-3">Accent Color</p>
                     <div className="flex gap-3">
                       {["#D9FF00", "#7C3AED", "#EC4899", "#06B6D4"].map((c) => (
-                        <button key={c} className="h-10 w-10 rounded-xl border-2 border-white/20 hover:border-white/50 transition-all" style={{ background: c }} />
+                        <button
+                          key={c}
+                          onClick={() => {
+                            setAccentColor(c);
+                            updateSettings.mutate({ accentColor: c });
+                          }}
+                          className={`h-10 w-10 rounded-xl border-2 transition-all ${
+                            selectedAccent.toLowerCase() === c.toLowerCase()
+                              ? "border-white scale-110"
+                              : "border-white/20 hover:border-white/50"
+                          }`}
+                          style={{ background: c }}
+                          aria-label={`Accent ${c}`}
+                        />
                       ))}
                     </div>
                   </div>
@@ -133,7 +207,7 @@ export default function Settings() {
                     <p className="text-white/40 text-sm">Update your profile details</p>
                   </div>
                   {[
-                    { id: "fullName", label: "Full Name", defaultValue: user?.fullName || "" },
+                    { id: "displayName", label: "Display Name", defaultValue: user?.displayName || "" },
                     { id: "username", label: "Username", defaultValue: user?.username || "" },
                     { id: "email", label: "Email", defaultValue: user?.email || "" },
                   ].map((f) => (
@@ -160,15 +234,35 @@ export default function Settings() {
                     <h3 className="font-display text-2xl text-white uppercase mb-1">Notifications</h3>
                     <p className="text-white/40 text-sm">Choose what you hear about</p>
                   </div>
-                  {Object.entries(notifications).map(([key, val]) => (
-                    <div key={key} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                      <span className="text-sm font-medium text-white capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                      <Switch
-                        checked={val}
-                        onCheckedChange={(v) => setNotifications(prev => ({ ...prev, [key]: v }))}
-                      />
-                    </div>
-                  ))}
+                  {settingsLoading || !settings ? (
+                    <div className="text-white/40 text-sm">Loading settings…</div>
+                  ) : (
+                    ([
+                      ["emailNotifications", "Email notifications"],
+                      ["pushNotifications", "Push notifications"],
+                      ["marketingEmails", "Marketing emails"],
+                      ["notifyFriendRequests", "Friend requests"],
+                      ["notifyCommunityInvites", "Community invites"],
+                      ["notifySquadInvites", "Squad invites"],
+                      ["notifyComments", "Comments"],
+                      ["notifyLikes", "Likes"],
+                      ["notifyChallenges", "Challenges"],
+                      ["notifyAiInsights", "AI insights"],
+                    ] as const).map(([key, label]) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
+                      >
+                        <span className="text-sm font-medium text-white">{label}</span>
+                        <Switch
+                          checked={settings[key]}
+                          onCheckedChange={(v) =>
+                            updateSettings.mutate({ [key]: v } as Partial<UserSettings>)
+                          }
+                        />
+                      </div>
+                    ))
+                  )}
                 </Card>
               )}
 
@@ -211,17 +305,40 @@ export default function Settings() {
                   <div>
                     <p className="text-white/40 text-xs font-bold tracking-[0.3em] uppercase mb-3">Active Sessions</p>
                     <div className="space-y-2">
-                      {SESSIONS.map((s, i) => (
-                        <div key={i} className={`p-4 rounded-xl flex items-center gap-3 ${s.current ? "bg-[#D9FF00]/5 border border-[#D9FF00]/20" : "bg-white/5"}`}>
-                          <Monitor className={`h-5 w-5 flex-shrink-0 ${s.current ? "text-[#D9FF00]" : "text-white/40"}`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-white truncate">{s.device}</p>
-                            <p className="text-xs text-white/40">{s.location} · {s.time}</p>
+                      {(sessions ?? []).length > 0 ? (
+                        (sessions ?? []).map((s, i) => (
+                          <div
+                            key={s.id}
+                            className={`p-4 rounded-xl flex items-center gap-3 ${
+                              i === 0
+                                ? "bg-[#D9FF00]/5 border border-[#D9FF00]/20"
+                                : "bg-white/5"
+                            }`}
+                          >
+                            <Monitor
+                              className={`h-5 w-5 flex-shrink-0 ${
+                                i === 0 ? "text-[#D9FF00]" : "text-white/40"
+                              }`}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-white truncate">
+                                {s.userAgent ?? "Unknown device"}
+                              </p>
+                              <p className="text-xs text-white/40">
+                                {s.ipAddress ?? "Unknown IP"} · Expires{" "}
+                                {new Date(s.expiresAt).toLocaleString()}
+                              </p>
+                            </div>
+                            {i === 0 ? (
+                              <span className="text-xs font-bold text-[#D9FF00] bg-[#D9FF00]/10 px-2 py-0.5 rounded-lg">
+                                Current
+                              </span>
+                            ) : null}
                           </div>
-                          {!s.current && <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10 text-xs">Revoke</Button>}
-                          {s.current && <span className="text-xs font-bold text-[#D9FF00] bg-[#D9FF00]/10 px-2 py-0.5 rounded-lg">Current</span>}
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <div className="text-white/40 text-sm">No active sessions found.</div>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -233,7 +350,7 @@ export default function Settings() {
                     <h3 className="font-display text-2xl text-white uppercase mb-1">Connected Accounts</h3>
                     <p className="text-white/40 text-sm">Link your social accounts</p>
                   </div>
-                  {CONNECTED_ACCOUNTS.map((a) => (
+                  {connectedAccounts.map((a) => (
                     <div key={a.name} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
                       <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${a.color} flex items-center justify-center font-bold text-white text-sm flex-shrink-0`}>
                         {a.name[0]}

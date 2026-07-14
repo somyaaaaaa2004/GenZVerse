@@ -1,7 +1,7 @@
-import { Link, useLocation } from "wouter";
-import { useAuth } from "@/context/AuthContext";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, UsersRound, Target, Bot, Sparkles, Store, Activity, User, Settings, LogOut, Menu, Zap } from "lucide-react";
+import { LayoutDashboard, Users, UsersRound, Target, Bot, Sparkles, Activity, User, Settings, LogOut, Menu, Zap, Search, UserPlus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -12,8 +12,9 @@ const NAV_ITEMS = [
   { label: "Challenges", href: "/dashboard/challenges", icon: Target },
   { label: "AI Companion", href: "/dashboard/ai-companion", icon: Bot },
   { label: "StyleVerse", href: "/dashboard/styleverse", icon: Sparkles },
-  { label: "Marketplace", href: "/dashboard/marketplace", icon: Store },
   { label: "Life Wrapped", href: "/dashboard/life-wrapped", icon: Activity },
+  { label: "Discover", href: "/dashboard/social", icon: Search },
+  { label: "Invites", href: "/dashboard/invites", icon: UserPlus },
 ];
 
 const BOTTOM_NAV_ITEMS = [
@@ -22,7 +23,7 @@ const BOTTOM_NAV_ITEMS = [
 ];
 
 export function Sidebar({ className = "", isMobile = false }: { className?: string, isMobile?: boolean }) {
-  const [location] = useLocation();
+  const location = useLocation();
   const { logout, user } = useAuth();
 
   const NavContent = () => (
@@ -38,9 +39,9 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
 
       <div className="space-y-2 flex-1">
         {NAV_ITEMS.map((item) => {
-          const isActive = location === item.href;
+          const isActive = location.pathname === item.href;
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} to={item.href}>
               <Button
                 variant="ghost"
                 className={`w-full justify-start h-12 rounded-none border-l-2 transition-all ${
@@ -48,7 +49,6 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
                     ? "border-[#D9FF00] bg-[#D9FF00]/5 text-white font-bold" 
                     : "border-transparent text-white/40 hover:text-white hover:bg-white/5"
                 }`}
-                data-testid={`sidebar-nav-${item.label.toLowerCase()}`}
               >
                 <item.icon className={`mr-3 h-5 w-5 ${isActive ? "text-[#D9FF00]" : ""}`} />
                 {item.label}
@@ -60,9 +60,9 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
 
       <div className="space-y-2 mt-auto mb-6 border-t border-white/5 pt-6">
         {BOTTOM_NAV_ITEMS.map((item) => {
-          const isActive = location === item.href;
+          const isActive = location.pathname === item.href;
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} to={item.href}>
               <Button
                 variant="ghost"
                 className={`w-full justify-start h-12 rounded-none border-l-2 transition-all ${
@@ -87,17 +87,16 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
         </Button>
       </div>
 
-      {/* User Mini Profile */}
       <div className="mt-auto bg-[#111111] p-4 rounded-2xl border border-white/10 flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border border-primary/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]">
             <AvatarImage src={user?.avatarUrl || undefined} alt={user?.username || ""} />
             <AvatarFallback className="bg-primary/20 text-primary">
-              {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "U"}
+              {user?.displayName?.charAt(0) || user?.username?.charAt(0) || "U"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white truncate">{user?.fullName || "Guest User"}</p>
+            <p className="text-sm font-bold text-white truncate">{user?.displayName || "User"}</p>
             <p className="text-xs text-white/40 font-display tracking-widest uppercase">Level {user?.level || 1}</p>
           </div>
         </div>
@@ -107,7 +106,7 @@ export function Sidebar({ className = "", isMobile = false }: { className?: stri
             <span>{user?.xp || 0}/1000</span>
           </div>
           <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full" style={{ width: `${((user?.xp || 0) / 1000) * 100}%` }} />
+            <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(((user?.xp || 0) / 1000) * 100, 100)}%` }} />
           </div>
         </div>
       </div>

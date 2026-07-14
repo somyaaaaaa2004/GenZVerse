@@ -15,17 +15,17 @@ The AI-powered social life operating system for Gen Z — combining social netwo
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React + Vite, Tailwind CSS, shadcn/ui, Framer Motion, wouter, next-themes
+- Frontend: React + Vite, Tailwind CSS, shadcn/ui, Framer Motion, react-router-dom, Zustand, next-themes
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- DB: PostgreSQL + Prisma ORM
+- Validation: Zod
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
 - `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
-- `lib/db/src/schema/` — Drizzle table definitions (users, squads, communities, challenges, activities)
+- `lib/db/prisma/schema.prisma` — primary relational data model
 - `artifacts/api-server/src/routes/` — Express route handlers
 - `artifacts/genzverse/src/` — React frontend
   - `src/context/AuthContext.tsx` — JWT auth context (localStorage: `genzverse_token`)
@@ -35,8 +35,8 @@ The AI-powered social life operating system for Gen Z — combining social netwo
 ## Architecture decisions
 
 - Contract-first: OpenAPI spec gates all codegen; frontend consumes generated React Query hooks only
-- JWT auth via simple base64url tokens stored in localStorage (`genzverse_token`)
-- Dashboard stats endpoint returns user-specific scores when authenticated, falls back to sample data
+- JWT auth with session-backed refresh token rotation and secure cookies
+- Dashboard stats/activity endpoints are database-backed
 - Dark/light mode via next-themes with system detection and localStorage persistence
 - All routes behind `/dashboard/*` are protected; unauthenticated users redirect to `/login`
 
@@ -50,7 +50,7 @@ The AI-powered social life operating system for Gen Z — combining social netwo
 
 **Dashboard** — Sidebar nav, Life/Productivity/Social/Learning/Finance/Style score widgets, Recent Activity feed
 
-**Additional Pages** — Squads, Communities, Challenges, AI Companion shell, StyleVerse, Marketplace, Life Wrapped, Profile, Settings
+**Additional Pages** — Squads, Communities, Challenges, AI Companion shell, StyleVerse, Life Wrapped, Profile, Settings
 
 ## User preferences
 
@@ -60,7 +60,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - After OpenAPI changes: always run `pnpm --filter @workspace/api-spec run codegen` before using updated types
 - Password hashing: SHA-256 with random salt, stored as `hash:salt`
-- Array columns in Drizzle: use `.array()` method, e.g. `text("tags").array()`
+- Keep Prisma schema and API contracts aligned before shipping endpoint changes
 - Google Fonts `@import` must be the very first line in `index.css`
 
 ## Pointers

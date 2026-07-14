@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: genzverse-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: genzverse
+    volumes:
+      - genzverse_pgdata:/var/lib/postgresql/data
+
+volumes:
+  genzverse_pgdata:

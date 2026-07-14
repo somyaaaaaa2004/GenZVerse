@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap, ArrowRight, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { authApi, ApiError } from "@/lib/api/client";
+
 export default function ResetPassword() {
-  const [, setLocation] = useLocation();
-  const [token, setToken] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
@@ -19,10 +22,8 @@ export default function ResetPassword() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get("token");
-    setToken(t);
-  }, []);
+    if (!token) return;
+  }, [token]);
 
   const passwordStrength = (() => {
     if (newPassword.length === 0) return 0;
@@ -52,25 +53,28 @@ export default function ResetPassword() {
       toast({ title: "Error", description: "Password must be at least 8 characters.", variant: "destructive" });
       return;
     }
+    const strongPassword =
+      /[a-z]/.test(newPassword) &&
+      /[A-Z]/.test(newPassword) &&
+      /[0-9]/.test(newPassword) &&
+      /[^A-Za-z0-9]/.test(newPassword);
+    if (!strongPassword) {
+      toast({
+        title: "Error",
+        description: "Password must include upper, lower, number, and special character.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, newPassword }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast({ title: "Reset failed", description: data.error ?? "Something went wrong", variant: "destructive" });
-        return;
-      }
-
+      await authApi.resetPassword(token, newPassword);
       setSuccess(true);
-      setTimeout(() => setLocation("/login"), 3000);
-    } catch {
-      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
+      setTimeout(() => navigate("/login"), 3000);
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Something went wrong";
+      toast({ title: "Reset failed", description: msg, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +87,7 @@ export default function ResetPassword() {
           <XCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
           <h2 className="font-display text-2xl text-white mb-2">INVALID LINK</h2>
           <p className="text-white/50 text-sm mb-6">This reset link is missing a token. Please request a new one.</p>
-          <Link href="/forgot-password">
+          <Link to="/forgot-password">
             <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl">
               Request New Link
             </Button>
@@ -99,7 +103,7 @@ export default function ResetPassword() {
       <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-pink-600/20 blur-[140px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-md px-4">
-        <Link href="/">
+        <Link to="/">
           <div className="flex items-center gap-2 mb-8 hover:opacity-80 transition-opacity cursor-pointer justify-center">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
@@ -222,7 +226,7 @@ export default function ResetPassword() {
               </form>
 
               <div className="mt-6 text-center">
-                <Link href="/login" className="text-white/40 hover:text-white/70 text-sm transition-colors">
+                <Link to="/login" className="text-white/40 hover:text-white/70 text-sm transition-colors">
                   Back to login
                 </Link>
               </div>
